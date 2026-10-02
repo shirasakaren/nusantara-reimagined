@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#ffb38a" />
+  <meta name="description" content="WAAWer Coaster. Build a toy roller coaster in a living cartoon valley, ride it, paint it, and fill the valley with joyful WAAWs again." />
+  <meta property="og:title" content="WAAWer Coaster" />
+  <meta property="og:description" content="Build the ride. Bring back the WAAW." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23ffc94a' stroke='%232a1f3d' stroke-width='4'/%3E%3Cpath d='M10 42c8 0 9-20 18-20s9 16 16 16 6-8 10-8' fill='none' stroke='%23e84a5f' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E" />
+  <title>WAAWer Coaster</title>
+</head>
+<body>
+  <canvas id="scene" aria-label="The valley, a 3D world where you build a roller coaster"></canvas>
+  <div id="vignette" aria-hidden="true"></div>
+  <div id="speedlines" aria-hidden="true"></div>
+  <div id="cursor" class="hidden-c" aria-hidden="true"><div class="c-dot"></div><div class="c-ring"></div><span class="c-label"></span></div>
+
+  <!-- LOADER ------------------------------------------------------------- -->
+  <section id="loader" aria-live="polite">
+    <div class="loader-sky" aria-hidden="true">
+      <span class="l-cloud c1"></span><span class="l-cloud c2"></span><span class="l-cloud c3"></span>
+    </div>
+    <div class="loader-card">
+      <div class="loader-word" aria-label="WAAWer">
+        <span>W</span><span>A</span><span>A</span><span>W</span><span>e</span><span>r</span>
+      </div>
+      <svg class="loader-track" viewBox="0 0 400 120" aria-hidden="true">
+        <path id="loader-path" d="M10 95 C 60 95, 70 25, 120 25 S 170 95, 210 95 S 260 30, 300 30 S 350 95, 390 95" fill="none" stroke="#2a1f3d" stroke-width="10" stroke-linecap="round" opacity=".12"/>
+        <path id="loader-fill" d="M10 95 C 60 95, 70 25, 120 25 S 170 95, 210 95 S 260 30, 300 30 S 350 95, 390 95" fill="none" stroke="#ff6b6b" stroke-width="6" stroke-linecap="round" stroke-dasharray="1 1000"/>
+        <g id="loader-car">
+          <rect x="-16" y="-20" width="32" height="18" rx="7" fill="#e84a5f" stroke="#2a1f3d" stroke-width="3"/>
+          <circle cx="-8" cy="-12" r="3" fill="#fff" stroke="#2a1f3d" stroke-width="1.5"/><circle cx="-1" cy="-12" r="3" fill="#fff" stroke="#2a1f3d" stroke-width="1.5"/>
+          <circle cx="-9" cy="0" r="4" fill="#2a1f3d"/><circle cx="9" cy="0" r="4" fill="#2a1f3d"/>
+          <circle cx="4" cy="-26" r="5" fill="#ffd9b8" stroke="#2a1f3d" stroke-width="2"/>
+        </g>
+      </svg>
+      <p class="loader-label"><span id="loader-text">Warming up the valley</span><span class="dots"><i>.</i><i>.</i><i>.</i></span></p>
+      <p class="loader-pct"><span id="loader-pct">0</span>%</p>
+      <p class="loader-tip" id="loader-tip"></p>
+    </div>
+  </section>
+
+  <!-- TITLE --------------------------------------------------------------- -->
+  <section id="title" hidden>
+    <div class="title-wrap">
+      <p class="eyebrow"><span class="eyebrow-dot"></span>A tiny coaster builder for big joyful shouts</p>
+      <h1 class="title-word" aria-label="WAAWer Coaster">
+        <span class="tw-line l1"><span class="ch">W</span><span class="ch">A</span><span class="ch">A</span><span class="ch">W</span><span class="ch er">e</span><span class="ch er">r</span></span>
+        <span class="tw-line l2"><span class="ch">C</span><span class="ch">o</span><span class="ch">a</span><span class="ch">s</span><span class="ch">t</span><span class="ch">e</span><span class="ch">r</span></span>
+      </h1>
+      <p class="tagline">Build the ride. Bring back the WAAW.</p>
+      <div class="title-actions">
+        <button id="btn-continue" class="btn big primary" hidden><span class="b-ic" data-icon="play"></span><span>Continue your park</span></button>
+        <button id="btn-story" class="btn big primary"><span class="b-ic" data-icon="star"></span><span>Start the story</span></button>
+        <button id="btn-free" class="btn big"><span class="b-ic" data-icon="build"></span><span>Free build</span></button>
+      </div>
+      <div class="title-links">
+        <button class="link-btn" id="btn-title-help"><span data-icon="help"></span>How to play</button>
+        <button class="link-btn" id="btn-title-album"><span data-icon="album"></span>Album</button>
+        <button class="link-btn" id="btn-title-sound"><span data-icon="sound"></span><span class="lbl">Sound on</span></button>
+      </div>
+    </div>
+    <div class="shared-banner" id="shared-banner" hidden>
+      <span class="sb-ic" data-icon="link"></span>
+      <div><strong>A friend sent you a coaster.</strong><span>Load it and take it for a spin.</span></div>
+      <button class="btn small primary" id="btn-load-shared">Load it</button>
+    </div>
+    <p class="title-foot">Made by hand, pixel by pixel. Best with sound.</p>
+  </section>
+
+  <!-- STORYBOOK ----------------------------------------------------------- -->
+  <section id="storybook" hidden>
+    <div class="book" role="dialog" aria-label="Prologue">
+      <div class="book-art" id="book-art"></div>
+      <div class="book-text">
+        <span class="book-num" id="book-num">1 / 5</span>
+        <h2 id="book-title"></h2>
+        <p id="book-body"></p>
+      </div>
+      <div class="book-nav">
+        <button class="link-btn" id="book-skip">Skip</button>
+        <div class="book-dots" id="book-dots"></div>
+        <button class="btn primary" id="book-next"><span>Next</span><span data-icon="chevron"></span></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- HUD ----------------------------------------------------------------- -->
+  <div id="hud" hidden>
+    <header class="hud-top">
+      <button class="brand-chip" id="brand" aria-label="Menu">
+        <span class="brand-logo"></span>
+        <span class="brand-word">WAAWer</span>
+      </button>
+
+      <div class="chapter-card" id="chapter">
+        <div class="ch-head">
+          <span class="ch-num" id="ch-num">Chapter 1</span>
+          <button class="ch-toggle" id="ch-toggle" aria-label="Collapse"><span data-icon="chevron"></span></button>
+        </div>
+        <h3 class="ch-title" id="ch-title">A quiet valley</h3>
+        <p class="ch-goal" id="ch-goal">Lay 5 pieces of track</p>
+        <div class="ch-bar"><i id="ch-bar"></i></div>
+        <p class="ch-label" id="ch-label">0 / 5</p>
+      </div>
+
+      <div class="waaw-meter" id="waaw" title="Every joyful shout from a rider counts as one WAAW">
+        <div class="wm-bubble"><span class="wm-num" id="waaw-num">0</span></div>
+        <div class="wm-meta">
+          <span class="wm-label">WAAWs</span>
+          <div class="wm-joy" title="Valley joy"><i id="joy-bar"></i></div>
+        </div>
+      </div>
+
+      <nav class="top-actions" aria-label="Game menu">
+        <button class="icon-btn" id="btn-photo" data-tip="Photo mode (P)"><span data-icon="camera"></span></button>
+        <button class="icon-btn" id="btn-album" data-tip="Album"><span data-icon="album"></span></button>
+        <button class="icon-btn" id="btn-badges" data-tip="Badges"><span data-icon="badge"></span><b class="dot" id="badge-dot" hidden></b></button>
+        <button class="icon-btn" id="btn-share" data-tip="Share"><span data-icon="share"></span></button>
+        <button class="icon-btn" id="btn-save" data-tip="Save slots"><span data-icon="save"></span></button>
+        <button class="icon-btn" id="btn-settings" data-tip="Settings"><span data-icon="gear"></span></button>
+      </nav>
+      <button class="icon-btn more-btn" id="btn-more" aria-label="More"><span data-icon="menu"></span></button>
+    </header>
+
+    <aside class="cam-tools" aria-label="Camera">
+      <button class="icon-btn compass" id="btn-compass" data-tip="Rotate view (Q / E)"><span class="needle" data-icon="compass"></span></button>
+      <button class="icon-btn" id="btn-zin" data-tip="Zoom in"><span data-icon="plus"></span></button>
+      <button class="icon-btn" id="btn-zout" data-tip="Zoom out"><span data-icon="minus"></span></button>
+      <button class="icon-btn" id="btn-home" data-tip="Back to the station"><span data-icon="home"></span></button>
+      <button class="icon-btn" id="btn-daynight" data-tip="Day and night"><span data-icon="sun"></span></button>
+    </aside>
+
+    <div class="mode-switch" role="tablist" aria-label="Mode">
+      <span class="ms-blob" id="ms-blob"></span>
+      <button role="tab" data-mode="build" class="active"><span data-icon="build"></span><span>Build</span></button>
+      <button role="tab" data-mode="view"><span data-icon="eye"></span><span>View</span></button>
+      <button role="tab" data-mode="ride"><span data-icon="seat"></span><span>Ride</span></button>
+    </div>
+
+    <div class="ride-controls" id="ride-controls">
+      <button class="icon-btn big-play" id="btn-play" data-tip="Play or pause (Space)"><span data-icon="play"></span></button>
+      <button class="icon-btn" id="btn-station" data-tip="Send the train home"><span data-icon="home"></span></button>
+      <button class="icon-btn pill" id="btn-speed" data-tip="Speed"><span class="lbl">1x</span></button>
+      <button class="icon-btn" id="btn-cam" data-tip="Ride camera (F)"><span data-icon="follow"></span></button>
+      <button class="icon-btn" id="btn-theme" data-tip="Train style"><span data-icon="coaster"></span></button>
+    </div>
+
+    <div class="dock" id="dock">
+      <div class="tool-tabs" role="tablist" aria-label="Tools">
+        <button data-tool="build" class="active"><span data-icon="build"></span><span>Track</span></button>
+        <button data-tool="paint"><span data-icon="paint"></span><span>Paint</span></button>
+        <button data-tool="decor"><span data-icon="decor"></span><span>Decor</span></button>
+        <button data-tool="erase"><span data-icon="erase"></span><span>Erase</span></button>
+      </div>
+
+      <div class="dock-panel active" data-panel="build">
+        <div class="cat-tabs" role="tablist">
+          <button data-cat="basic" class="active">Basics</button>
+          <button data-cat="thrill">Thrills</button>
+          <button data-cat="special">Specials</button>
+        </div>
+        <div class="dock-row">
+          <div class="pieces" id="pieces"></div>
+          <div class="dock-actions">
+            <button class="icon-btn" id="btn-undo" data-tip="Undo (Backspace)"><span data-icon="undo"></span></button>
+            <button class="icon-btn wand" id="btn-wand" data-tip="Magic wand. Finish the loop for me."><span data-icon="wand"></span></button>
+            <button class="icon-btn danger" id="btn-clear" data-tip="Clear all track"><span data-icon="trash"></span></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="dock-panel" data-panel="paint">
+        <div class="paint-targets" role="radiogroup">
+          <button data-target="rail" class="active">Rails</button>
+          <button data-target="spine">Spine</button>
+          <button data-target="support">Supports</button>
+          <button data-target="all">Everything</button>
+        </div>
+        <div class="dock-row">
+          <div class="swatches" id="swatches"></div>
+          <div class="dock-actions">
+            <button class="btn small" id="btn-paint-all"><span data-icon="paint"></span><span>Paint all</span></button>
+          </div>
+        </div>
+        <p class="dock-hint">Pick a color, then click any piece. New pieces use your color too.</p>
+      </div>
+
+      <div class="dock-panel" data-panel="decor">
+        <div class="dock-row">
+          <div class="pieces decor-list" id="decor-list"></div>
+          <div class="dock-actions">
+            <button class="icon-btn" id="btn-rotate" data-tip="Rotate (R)"><span data-icon="rotate"></span></button>
+          </div>
+        </div>
+        <p class="dock-hint">Click a free square on the lawn. Click a decoration again to turn it.</p>
+      </div>
+
+      <div class="dock-panel" data-panel="erase">
+        <div class="erase-box">
+          <span class="eb-ic" data-icon="erase"></span>
+          <p>Click a piece to remove it and everything after it. Click a decoration to remove it.</p>
+          <button class="btn small danger" id="btn-clear2"><span data-icon="trash"></span><span>Clear all track</span></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="piece-tip" id="piece-tip" hidden>
+      <strong id="pt-name"></strong><span id="pt-desc"></span><em id="pt-status"></em>
+    </div>
+
+    <div class="stats-panel" id="stats" hidden>
+      <div class="gauge">
+        <svg viewBox="0 0 120 70" aria-hidden="true">
+          <path d="M10 64 A50 50 0 0 1 110 64" fill="none" stroke="#2a1f3d" stroke-opacity=".12" stroke-width="12" stroke-linecap="round"/>
+          <path id="gauge-arc" d="M10 64 A50 50 0 0 1 110 64" fill="none" stroke="url(#gg)" stroke-width="12" stroke-linecap="round" stroke-dasharray="0 999"/>
+          <defs><linearGradient id="gg" x1="0" x2="1"><stop offset="0" stop-color="#5ed6b4"/><stop offset=".55" stop-color="#ffc94a"/><stop offset="1" stop-color="#ff6b6b"/></linearGradient></defs>
+        </svg>
+        <div class="g-read"><span id="st-speed">0</span><small>km/h</small></div>
+      </div>
+      <div class="st-grid">
+        <div><small>Height</small><span id="st-height">0 m</span></div>
+        <div><small>G force</small><span id="st-g">1.0</span></div>
+        <div><small>Lap</small><span id="st-lap">0.0 s</span></div>
+      </div>
+      <p class="st-phase" id="st-phase">Boarding</p>
+    </div>
+
+    <div class="rating-card" id="rating" hidden>
+      <h4>Ride report</h4>
+      <div class="rt-row"><span>Excitement</span><div class="rt-bar"><i id="rt-ex"></i></div><b id="rt-exw">Fun</b></div>
+      <div class="rt-row"><span>Intensity</span><div class="rt-bar"><i id="rt-in"></i></div><b id="rt-inw">Mild</b></div>
+      <div class="rt-row"><span>Nausea</span><div class="rt-bar"><i id="rt-na"></i></div><b id="rt-naw">Smooth</b></div>
+      <p class="rt-foot" id="rt-foot"></p>
+    </div>
+
+    <div class="wawa-dialog" id="wawa-dialog" hidden>
+      <div class="wd-avatar" id="wd-avatar"></div>
+      <div class="wd-bubble">
+        <p class="wd-name">Wawa</p>
+        <p class="wd-text" id="wd-text"></p>
+        <div class="wd-actions" id="wd-actions"></div>
+      </div>
+      <button class="wd-close" id="wd-close" aria-label="Close"><span data-icon="close"></span></button>
+    </div>
+  </div>
+
+  <!-- PHOTO MODE ---------------------------------------------------------- -->
+  <section id="photo-mode" hidden>
+    <div class="vf" aria-hidden="true"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i><div class="vf-grid"></div><div class="vf-rec"><b></b>Photo mode</div></div>
+    <div class="pm-top">
+      <button class="icon-btn" id="pm-close" data-tip="Leave photo mode (Esc)"><span data-icon="close"></span></button>
+      <div class="pm-times">
+        <button data-time="morning" data-icon="sunrise"></button>
+        <button data-time="day" data-icon="sun"></button>
+        <button data-time="sunset" data-icon="sunset"></button>
+        <button data-time="night" data-icon="moon"></button>
+      </div>
+      <button class="icon-btn" id="pm-grid" data-tip="Grid"><span data-icon="map"></span></button>
+    </div>
+    <div class="pm-bottom">
+      <div class="pm-filters" id="pm-filters"></div>
+      <div class="pm-row">
+        <input id="pm-caption" maxlength="40" placeholder="Write a caption" aria-label="Caption" />
+        <button class="shutter" id="pm-snap" aria-label="Take photo"><i></i></button>
+        <button class="icon-btn" id="pm-album" data-tip="Album"><span data-icon="album"></span></button>
+      </div>
+    </div>
+  </section>
+
+  <div id="tooltip" role="tooltip"><strong></strong><span></span></div>
+  <div id="bubbles" aria-hidden="true"></div>
+  <div id="toasts" aria-live="polite"></div>
+  <div id="modal-root"></div>
+  <canvas id="confetti" aria-hidden="true"></canvas>
+  <div id="flash" aria-hidden="true"></div>
+  <div id="night-tint" aria-hidden="true"></div>
+  <noscript>WAAWer Coaster needs JavaScript and WebGL to run.</noscript>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
