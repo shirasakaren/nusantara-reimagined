@@ -1,40 +1,51 @@
-// Shared runtime state. Plain object, mutated by systems, observed through the bus.
-import { bus } from './bus.js';
+// Shared state, a tiny event bus and safe storage.
+const KEY = 'nusantara-reimagined-v1';
 
-const isTouch = typeof window !== 'undefined' && (('ontouchstart' in window) || navigator.maxTouchPoints > 0);
-const small = typeof window !== 'undefined' && Math.min(window.innerWidth, window.innerHeight) < 720;
+function load() {
+  try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch { return {}; }
+}
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify({ name: state.name, stamps: [...state.stamps], best: state.best, lite: state.lite })); } catch { /* storage may be blocked */ }
+}
+
+const saved = load();
+const listeners = new Map();
 
 export const state = {
-  started: false,
-  mode: 'build',        // build | view | ride | photo
-  tool: 'build',        // build | erase | paint | decor
-  rideCam: 'orbit',     // orbit | follow | first
-  isTouch,
-  isMobile: isTouch && small,
-  quality: 'auto',      // auto | low | medium | high
-  tier: 'high',         // resolved tier
-  sound: true,
-  music: true,
-  timeOfDay: 0.32,      // 0..1, 0.25 sunrise, 0.5 noon-ish, 0.75 sunset, 0 / 1 midnight
-  dayPreset: 'day',
-  liveTime: false,
-  story: true,
-  joy: 0,               // 0..1 valley joy, drives saturation and life
-  waaws: 0,
-  paint: { rail: 0, spine: 1, support: 2 },
-  paintColor: 0,
-  paintTarget: 'rail',
-  decorType: 'tree',
-  trainTheme: 'classic',
-  trainCars: 3,
-  reducedMotion: typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches,
+  name: saved.name || '',
+  stamps: new Set(saved.stamps || []),
+  best: saved.best || {},
+  lite: !!saved.lite,
+  sound: false,
+  entered: false,
+  scene: 'map',
+  mood: 'dawn',
+  section: null,
+  reduced: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+  snap: /[?&]snap/.test(location.search),
+  touch: window.matchMedia('(hover: none), (pointer: coarse)').matches,
+  mobile: window.innerWidth < 760,
+  pointer: { x: 0, y: 0, nx: 0, ny: 0 },
+  save,
 };
 
-export function setState(patch) {
-  const changed = {};
-  for (const k in patch) {
-    if (state[k] !== patch[k]) { changed[k] = patch[k]; state[k] = patch[k]; }
-  }
-  for (const k in changed) bus.emit('state:' + k, changed[k]);
-  if (Object.keys(changed).length) bus.emit('state', changed);
+export function on(evt, fn) {
+  if (!listeners.has(evt)) listeners.set(evt, new Set());
+  listeners.get(evt).add(fn);
+  return () => listeners.get(evt).delete(fn);
 }
+export function emit(evt, data) {
+  const set = listeners.get(evt);
+  if (set) for (const fn of set) fn(data);
+}
+
+export function visitorName(fallback = 'friend') {
+  return state.name ? state.name : fallback;
+}
+
+window.addEventListener('resize', () => { state.mobile = window.innerWidth < 760; });
+window.addEventListener('pointermove', (e) => {
+  state.pointer.x = e.clientX; state.pointer.y = e.clientY;
+  state.pointer.nx = (e.clientX / window.innerWidth) * 2 - 1;
+  state.pointer.ny = (e.clientY / window.innerHeight) * 2 - 1;
+}, { passive: true });

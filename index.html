@@ -2,281 +2,735 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no" />
-  <meta name="theme-color" content="#ffb38a" />
-  <meta name="description" content="WAAWer Coaster. Build a toy roller coaster in a living cartoon valley, ride it, paint it, and fill the valley with joyful WAAWs again." />
-  <meta property="og:title" content="WAAWer Coaster" />
-  <meta property="og:description" content="Build the ride. Bring back the WAAW." />
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23ffc94a' stroke='%232a1f3d' stroke-width='4'/%3E%3Cpath d='M10 42c8 0 9-20 18-20s9 16 16 16 6-8 10-8' fill='none' stroke='%23e84a5f' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E" />
-  <title>WAAWer Coaster</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#fff6e6" />
+  <meta name="description" content="Nusantara Reimagined. Walk through Indonesia under other flags, from the first Portuguese sails in 1511 to a free Republic in 1949, and the quiet pressures of today." />
+  <meta property="og:title" content="Nusantara Reimagined" />
+  <meta property="og:description" content="Four centuries of other flags. One archipelago that kept its voice." />
+  <meta property="og:type" content="website" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230d1426'/%3E%3Cpath d='M32 10 L50 32 L32 54 L14 32 Z' fill='none' stroke='%23d9b45a' stroke-width='4'/%3E%3Ccircle cx='32' cy='32' r='7' fill='%23c8372d'/%3E%3C/svg%3E" />
+  <title>Nusantara Reimagined</title>
 </head>
-<body>
-  <canvas id="scene" aria-label="The valley, a 3D world where you build a roller coaster"></canvas>
-  <div id="vignette" aria-hidden="true"></div>
-  <div id="speedlines" aria-hidden="true"></div>
-  <div id="cursor" class="hidden-c" aria-hidden="true"><div class="c-dot"></div><div class="c-ring"></div><span class="c-label"></span></div>
+<body class="is-loading">
+  <a class="skip-link" href="#story">Skip to the story</a>
 
-  <!-- LOADER ------------------------------------------------------------- -->
-  <section id="loader" aria-live="polite">
-    <div class="loader-sky" aria-hidden="true">
-      <span class="l-cloud c1"></span><span class="l-cloud c2"></span><span class="l-cloud c3"></span>
-    </div>
-    <div class="loader-card">
-      <div class="loader-word" aria-label="WAAWer">
-        <span>W</span><span>A</span><span>A</span><span>W</span><span>e</span><span>r</span>
-      </div>
-      <svg class="loader-track" viewBox="0 0 400 120" aria-hidden="true">
-        <path id="loader-path" d="M10 95 C 60 95, 70 25, 120 25 S 170 95, 210 95 S 260 30, 300 30 S 350 95, 390 95" fill="none" stroke="#2a1f3d" stroke-width="10" stroke-linecap="round" opacity=".12"/>
-        <path id="loader-fill" d="M10 95 C 60 95, 70 25, 120 25 S 170 95, 210 95 S 260 30, 300 30 S 350 95, 390 95" fill="none" stroke="#ff6b6b" stroke-width="6" stroke-linecap="round" stroke-dasharray="1 1000"/>
-        <g id="loader-car">
-          <rect x="-16" y="-20" width="32" height="18" rx="7" fill="#e84a5f" stroke="#2a1f3d" stroke-width="3"/>
-          <circle cx="-8" cy="-12" r="3" fill="#fff" stroke="#2a1f3d" stroke-width="1.5"/><circle cx="-1" cy="-12" r="3" fill="#fff" stroke="#2a1f3d" stroke-width="1.5"/>
-          <circle cx="-9" cy="0" r="4" fill="#2a1f3d"/><circle cx="9" cy="0" r="4" fill="#2a1f3d"/>
-          <circle cx="4" cy="-26" r="5" fill="#ffd9b8" stroke="#2a1f3d" stroke-width="2"/>
-        </g>
-      </svg>
-      <p class="loader-label"><span id="loader-text">Warming up the valley</span><span class="dots"><i>.</i><i>.</i><i>.</i></span></p>
-      <p class="loader-pct"><span id="loader-pct">0</span>%</p>
-      <p class="loader-tip" id="loader-tip"></p>
-    </div>
-  </section>
+  <canvas id="gl" aria-hidden="true"></canvas>
+  <div class="fx-tint" aria-hidden="true"></div>
+  <div class="fx-vignette" aria-hidden="true"></div>
+  <div class="fx-grain" aria-hidden="true"></div>
+  <div id="labels" class="map-labels" aria-hidden="true"></div>
 
-  <!-- TITLE --------------------------------------------------------------- -->
-  <section id="title" hidden>
-    <div class="title-wrap">
-      <p class="eyebrow"><span class="eyebrow-dot"></span>A tiny coaster builder for big joyful shouts</p>
-      <h1 class="title-word" aria-label="WAAWer Coaster">
-        <span class="tw-line l1"><span class="ch">W</span><span class="ch">A</span><span class="ch">A</span><span class="ch">W</span><span class="ch er">e</span><span class="ch er">r</span></span>
-        <span class="tw-line l2"><span class="ch">C</span><span class="ch">o</span><span class="ch">a</span><span class="ch">s</span><span class="ch">t</span><span class="ch">e</span><span class="ch">r</span></span>
-      </h1>
-      <p class="tagline">Build the ride. Bring back the WAAW.</p>
-      <div class="title-actions">
-        <button id="btn-continue" class="btn big primary" hidden><span class="b-ic" data-icon="play"></span><span>Continue your park</span></button>
-        <button id="btn-story" class="btn big primary"><span class="b-ic" data-icon="star"></span><span>Start the story</span></button>
-        <button id="btn-free" class="btn big"><span class="b-ic" data-icon="build"></span><span>Free build</span></button>
-      </div>
-      <div class="title-links">
-        <button class="link-btn" id="btn-title-help"><span data-icon="help"></span>How to play</button>
-        <button class="link-btn" id="btn-title-album"><span data-icon="album"></span>Album</button>
-        <button class="link-btn" id="btn-title-sound"><span data-icon="sound"></span><span class="lbl">Sound on</span></button>
-      </div>
-    </div>
-    <div class="shared-banner" id="shared-banner" hidden>
-      <span class="sb-ic" data-icon="link"></span>
-      <div><strong>A friend sent you a coaster.</strong><span>Load it and take it for a spin.</span></div>
-      <button class="btn small primary" id="btn-load-shared">Load it</button>
-    </div>
-    <p class="title-foot">Made by hand, pixel by pixel. Best with sound.</p>
-  </section>
+  <div id="cursor" aria-hidden="true">
+    <div class="cur-ring"><svg viewBox="0 0 60 60"><circle class="cur-prog" cx="30" cy="30" r="27" /></svg></div>
+    <div class="cur-dot"></div>
+    <span class="cur-label"></span>
+  </div>
 
-  <!-- STORYBOOK ----------------------------------------------------------- -->
-  <section id="storybook" hidden>
-    <div class="book" role="dialog" aria-label="Prologue">
-      <div class="book-art" id="book-art"></div>
-      <div class="book-text">
-        <span class="book-num" id="book-num">1 / 5</span>
-        <h2 id="book-title"></h2>
-        <p id="book-body"></p>
-      </div>
-      <div class="book-nav">
-        <button class="link-btn" id="book-skip">Skip</button>
-        <div class="book-dots" id="book-dots"></div>
-        <button class="btn primary" id="book-next"><span>Next</span><span data-icon="chevron"></span></button>
-      </div>
-    </div>
-  </section>
-
-  <!-- HUD ----------------------------------------------------------------- -->
-  <div id="hud" hidden>
-    <header class="hud-top">
-      <button class="brand-chip" id="brand" aria-label="Menu">
-        <span class="brand-logo"></span>
-        <span class="brand-word">WAAWer</span>
-      </button>
-
-      <div class="chapter-card" id="chapter">
-        <div class="ch-head">
-          <span class="ch-num" id="ch-num">Chapter 1</span>
-          <button class="ch-toggle" id="ch-toggle" aria-label="Collapse"><span data-icon="chevron"></span></button>
-        </div>
-        <h3 class="ch-title" id="ch-title">A quiet valley</h3>
-        <p class="ch-goal" id="ch-goal">Lay 5 pieces of track</p>
-        <div class="ch-bar"><i id="ch-bar"></i></div>
-        <p class="ch-label" id="ch-label">0 / 5</p>
-      </div>
-
-      <div class="waaw-meter" id="waaw" title="Every joyful shout from a rider counts as one WAAW">
-        <div class="wm-bubble"><span class="wm-num" id="waaw-num">0</span></div>
-        <div class="wm-meta">
-          <span class="wm-label">WAAWs</span>
-          <div class="wm-joy" title="Valley joy"><i id="joy-bar"></i></div>
-        </div>
-      </div>
-
-      <nav class="top-actions" aria-label="Game menu">
-        <button class="icon-btn" id="btn-photo" data-tip="Photo mode (P)"><span data-icon="camera"></span></button>
-        <button class="icon-btn" id="btn-album" data-tip="Album"><span data-icon="album"></span></button>
-        <button class="icon-btn" id="btn-badges" data-tip="Badges"><span data-icon="badge"></span><b class="dot" id="badge-dot" hidden></b></button>
-        <button class="icon-btn" id="btn-share" data-tip="Share"><span data-icon="share"></span></button>
-        <button class="icon-btn" id="btn-save" data-tip="Save slots"><span data-icon="save"></span></button>
-        <button class="icon-btn" id="btn-settings" data-tip="Settings"><span data-icon="gear"></span></button>
-      </nav>
-      <button class="icon-btn more-btn" id="btn-more" aria-label="More"><span data-icon="menu"></span></button>
-    </header>
-
-    <aside class="cam-tools" aria-label="Camera">
-      <button class="icon-btn compass" id="btn-compass" data-tip="Rotate view (Q / E)"><span class="needle" data-icon="compass"></span></button>
-      <button class="icon-btn" id="btn-zin" data-tip="Zoom in"><span data-icon="plus"></span></button>
-      <button class="icon-btn" id="btn-zout" data-tip="Zoom out"><span data-icon="minus"></span></button>
-      <button class="icon-btn" id="btn-home" data-tip="Back to the station"><span data-icon="home"></span></button>
-      <button class="icon-btn" id="btn-daynight" data-tip="Day and night"><span data-icon="sun"></span></button>
-    </aside>
-
-    <div class="mode-switch" role="tablist" aria-label="Mode">
-      <span class="ms-blob" id="ms-blob"></span>
-      <button role="tab" data-mode="build" class="active"><span data-icon="build"></span><span>Build</span></button>
-      <button role="tab" data-mode="view"><span data-icon="eye"></span><span>View</span></button>
-      <button role="tab" data-mode="ride"><span data-icon="seat"></span><span>Ride</span></button>
-    </div>
-
-    <div class="ride-controls" id="ride-controls">
-      <button class="icon-btn big-play" id="btn-play" data-tip="Play or pause (Space)"><span data-icon="play"></span></button>
-      <button class="icon-btn" id="btn-station" data-tip="Send the train home"><span data-icon="home"></span></button>
-      <button class="icon-btn pill" id="btn-speed" data-tip="Speed"><span class="lbl">1x</span></button>
-      <button class="icon-btn" id="btn-cam" data-tip="Ride camera (F)"><span data-icon="follow"></span></button>
-      <button class="icon-btn" id="btn-theme" data-tip="Train style"><span data-icon="coaster"></span></button>
-    </div>
-
-    <div class="dock" id="dock">
-      <div class="tool-tabs" role="tablist" aria-label="Tools">
-        <button data-tool="build" class="active"><span data-icon="build"></span><span>Track</span></button>
-        <button data-tool="paint"><span data-icon="paint"></span><span>Paint</span></button>
-        <button data-tool="decor"><span data-icon="decor"></span><span>Decor</span></button>
-        <button data-tool="erase"><span data-icon="erase"></span><span>Erase</span></button>
-      </div>
-
-      <div class="dock-panel active" data-panel="build">
-        <div class="cat-tabs" role="tablist">
-          <button data-cat="basic" class="active">Basics</button>
-          <button data-cat="thrill">Thrills</button>
-          <button data-cat="special">Specials</button>
-        </div>
-        <div class="dock-row">
-          <div class="pieces" id="pieces"></div>
-          <div class="dock-actions">
-            <button class="icon-btn" id="btn-undo" data-tip="Undo (Backspace)"><span data-icon="undo"></span></button>
-            <button class="icon-btn wand" id="btn-wand" data-tip="Magic wand. Finish the loop for me."><span data-icon="wand"></span></button>
-            <button class="icon-btn danger" id="btn-clear" data-tip="Clear all track"><span data-icon="trash"></span></button>
-          </div>
-        </div>
-      </div>
-
-      <div class="dock-panel" data-panel="paint">
-        <div class="paint-targets" role="radiogroup">
-          <button data-target="rail" class="active">Rails</button>
-          <button data-target="spine">Spine</button>
-          <button data-target="support">Supports</button>
-          <button data-target="all">Everything</button>
-        </div>
-        <div class="dock-row">
-          <div class="swatches" id="swatches"></div>
-          <div class="dock-actions">
-            <button class="btn small" id="btn-paint-all"><span data-icon="paint"></span><span>Paint all</span></button>
-          </div>
-        </div>
-        <p class="dock-hint">Pick a color, then click any piece. New pieces use your color too.</p>
-      </div>
-
-      <div class="dock-panel" data-panel="decor">
-        <div class="dock-row">
-          <div class="pieces decor-list" id="decor-list"></div>
-          <div class="dock-actions">
-            <button class="icon-btn" id="btn-rotate" data-tip="Rotate (R)"><span data-icon="rotate"></span></button>
-          </div>
-        </div>
-        <p class="dock-hint">Click a free square on the lawn. Click a decoration again to turn it.</p>
-      </div>
-
-      <div class="dock-panel" data-panel="erase">
-        <div class="erase-box">
-          <span class="eb-ic" data-icon="erase"></span>
-          <p>Click a piece to remove it and everything after it. Click a decoration to remove it.</p>
-          <button class="btn small danger" id="btn-clear2"><span data-icon="trash"></span><span>Clear all track</span></button>
-        </div>
-      </div>
-    </div>
-
-    <div class="piece-tip" id="piece-tip" hidden>
-      <strong id="pt-name"></strong><span id="pt-desc"></span><em id="pt-status"></em>
-    </div>
-
-    <div class="stats-panel" id="stats" hidden>
-      <div class="gauge">
-        <svg viewBox="0 0 120 70" aria-hidden="true">
-          <path d="M10 64 A50 50 0 0 1 110 64" fill="none" stroke="#2a1f3d" stroke-opacity=".12" stroke-width="12" stroke-linecap="round"/>
-          <path id="gauge-arc" d="M10 64 A50 50 0 0 1 110 64" fill="none" stroke="url(#gg)" stroke-width="12" stroke-linecap="round" stroke-dasharray="0 999"/>
-          <defs><linearGradient id="gg" x1="0" x2="1"><stop offset="0" stop-color="#5ed6b4"/><stop offset=".55" stop-color="#ffc94a"/><stop offset="1" stop-color="#ff6b6b"/></linearGradient></defs>
-        </svg>
-        <div class="g-read"><span id="st-speed">0</span><small>km/h</small></div>
-      </div>
-      <div class="st-grid">
-        <div><small>Height</small><span id="st-height">0 m</span></div>
-        <div><small>G force</small><span id="st-g">1.0</span></div>
-        <div><small>Lap</small><span id="st-lap">0.0 s</span></div>
-      </div>
-      <p class="st-phase" id="st-phase">Boarding</p>
-    </div>
-
-    <div class="rating-card" id="rating" hidden>
-      <h4>Ride report</h4>
-      <div class="rt-row"><span>Excitement</span><div class="rt-bar"><i id="rt-ex"></i></div><b id="rt-exw">Fun</b></div>
-      <div class="rt-row"><span>Intensity</span><div class="rt-bar"><i id="rt-in"></i></div><b id="rt-inw">Mild</b></div>
-      <div class="rt-row"><span>Nausea</span><div class="rt-bar"><i id="rt-na"></i></div><b id="rt-naw">Smooth</b></div>
-      <p class="rt-foot" id="rt-foot"></p>
-    </div>
-
-    <div class="wawa-dialog" id="wawa-dialog" hidden>
-      <div class="wd-avatar" id="wd-avatar"></div>
-      <div class="wd-bubble">
-        <p class="wd-name">Wawa</p>
-        <p class="wd-text" id="wd-text"></p>
-        <div class="wd-actions" id="wd-actions"></div>
-      </div>
-      <button class="wd-close" id="wd-close" aria-label="Close"><span data-icon="close"></span></button>
+  <!-- LOADER -->
+  <div id="loader" role="status" aria-live="polite">
+    <div class="loader-inner">
+      <svg class="loader-kawung" viewBox="0 0 200 200" aria-hidden="true"></svg>
+      <p class="loader-year"><span id="loader-year">1511</span></p>
+      <p class="loader-line">Gathering four centuries<span class="dots"><i>.</i><i>.</i><i>.</i></span></p>
+      <div class="loader-bar"><span></span></div>
     </div>
   </div>
 
-  <!-- PHOTO MODE ---------------------------------------------------------- -->
-  <section id="photo-mode" hidden>
-    <div class="vf" aria-hidden="true"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i><div class="vf-grid"></div><div class="vf-rec"><b></b>Photo mode</div></div>
-    <div class="pm-top">
-      <button class="icon-btn" id="pm-close" data-tip="Leave photo mode (Esc)"><span data-icon="close"></span></button>
-      <div class="pm-times">
-        <button data-time="morning" data-icon="sunrise"></button>
-        <button data-time="day" data-icon="sun"></button>
-        <button data-time="sunset" data-icon="sunset"></button>
-        <button data-time="night" data-icon="moon"></button>
-      </div>
-      <button class="icon-btn" id="pm-grid" data-tip="Grid"><span data-icon="map"></span></button>
+  <!-- GATE -->
+  <section id="gate" aria-labelledby="gate-title">
+    <div class="gate-frame" aria-hidden="true">
+      <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
     </div>
-    <div class="pm-bottom">
-      <div class="pm-filters" id="pm-filters"></div>
-      <div class="pm-row">
-        <input id="pm-caption" maxlength="40" placeholder="Write a caption" aria-label="Caption" />
-        <button class="shutter" id="pm-snap" aria-label="Take photo"><i></i></button>
-        <button class="icon-btn" id="pm-album" data-tip="Album"><span data-icon="album"></span></button>
+    <div class="gate-inner">
+      <p class="eyebrow gate-eyebrow">An interactive archive <span class="sep"></span> 1511 to 1949 <span class="sep"></span> and today</p>
+      <h1 id="gate-title" class="gate-title">
+        <span class="gt-line gt-1">Nusantara</span>
+        <span class="gt-line gt-2"><em>Reimagined</em></span>
+      </h1>
+      <p class="gate-lead">Four centuries of other flags. One archipelago that kept its voice. Come walk through it with me.</p>
+      <label class="gate-name">
+        <span>What should I call you?</span>
+        <input id="visitor-name" type="text" maxlength="24" autocomplete="given-name" placeholder="Your first name, if you like" />
+      </label>
+      <div class="gate-actions">
+        <button id="enter-sound" class="btn-hold" data-cursor="Hold" aria-label="Hold to enter with sound">
+          <svg class="hold-ring" viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="56" /><circle class="hold-prog" cx="60" cy="60" r="56" /></svg>
+          <span class="hold-text"><b>Hold</b><small>to enter with sound</small></span>
+        </button>
+        <button id="enter-quiet" class="btn-text" data-cursor="Enter">Enter quietly</button>
       </div>
+      <p class="gate-note">Best with headphones. About 25 minutes. Almost everything here can be touched.</p>
     </div>
+    <div class="gate-compass" aria-hidden="true"></div>
   </section>
 
-  <div id="tooltip" role="tooltip"><strong></strong><span></span></div>
-  <div id="bubbles" aria-hidden="true"></div>
-  <div id="toasts" aria-live="polite"></div>
-  <div id="modal-root"></div>
+  <!-- HUD -->
+  <header class="hud" aria-label="Site controls">
+    <a class="hud-logo" href="#prologue" data-cursor="Begin" aria-label="Nusantara Reimagined, back to the start">
+      <svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 3 L35 20 L20 37 L5 20 Z" /><circle cx="20" cy="20" r="5" /></svg>
+      <span>Nusantara <em>Reimagined</em></span>
+    </a>
+    <div class="hud-chapter" aria-live="polite">
+      <span class="hc-num" id="hc-num">Prologue</span>
+      <span class="hc-title" id="hc-title">Before the Ships</span>
+    </div>
+    <div class="hud-actions">
+      <button class="hud-btn hud-sound" id="btn-sound" aria-pressed="false" aria-label="Toggle sound" data-cursor="Sound">
+        <span class="bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+      </button>
+      <button class="hud-btn hud-pass" id="btn-pass" aria-label="Open your travel pass" data-cursor="Pass">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2" /><circle cx="12" cy="10" r="3.2" /><path d="M8 16.5h8" /></svg>
+        <span class="pass-count" id="pass-count">0</span>
+      </button>
+      <button class="hud-btn hud-menu" id="btn-menu" aria-expanded="false" aria-controls="menu" data-cursor="Menu">
+        <span class="menu-lines" aria-hidden="true"><i></i><i></i></span><span class="menu-word">Chapters</span>
+      </button>
+    </div>
+  </header>
+
+  <nav class="timeline" aria-label="Timeline">
+    <div class="tl-track"><div class="tl-fill"></div><div class="tl-ticks" id="tl-ticks"></div></div>
+    <div class="tl-year" id="tl-year" aria-hidden="true">1293</div>
+  </nav>
+
+  <main id="story">
+
+    <!-- PROLOGUE -->
+    <section class="chapter" id="prologue" data-scene="map" data-mood="dawn" data-chapter="Prologue" data-title="Before the Ships" data-year="1293" data-stamp="spice">
+      <header class="ch-head">
+        <p class="ch-num">Prologue</p>
+        <h2 class="ch-title" data-split>Before the Ships</h2>
+        <p class="ch-years">7th century to 1511</p>
+        <p class="ch-scroll" aria-hidden="true"><span>Scroll slowly</span><i></i></p>
+      </header>
+      <div class="ch-body">
+        <figure class="vitrine" data-relic="nutmeg">
+          <div class="vitrine-stage" data-cursor="Drag" tabindex="0" aria-label="A 3D nutmeg fruit. Drag to turn it. Click to open it."></div>
+          <figcaption><b>Nutmeg, Banda Islands</b><span>One fruit holds two spices. The seed is nutmeg. The red lace around it is mace. Click to split it open.</span></figcaption>
+        </figure>
+        <div class="beats">
+          <div class="beat" data-focus="overview"><p class="beat-big">Long before Europe drew us on its maps, these islands were already a crossroads.</p></div>
+          <div class="beat" data-focus="palembang" data-marks="palembang"><p>From Palembang, <b>Srivijaya</b> ruled the sea lanes. Its oldest dated inscription is from 682.</p></div>
+          <div class="beat" data-focus="majapahit" data-marks="trowulan"><p>In 1293, <b>Majapahit</b> rose in East Java. Around 1336, its minister Gajah Mada swore the Palapa oath. He vowed to unite <i>Nusantara</i>, the islands beyond.</p><p class="note">The oath survives only in later chronicles, so its exact words are uncertain.</p></div>
+          <div class="beat" data-focus="maluku" data-marks="ternate,tidore,banda"><p>And there was a secret the whole world wanted. Cloves grew only on a few islands in North Maluku. Nutmeg and mace grew only in <b>Banda</b>.</p></div>
+          <div class="beat" data-focus="banda" data-marks="banda"><p class="beat-big">Tiny islands. Enormous desire. This is where our story begins.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CHAPTER I -->
+    <section class="chapter" id="ch1" data-scene="map" data-mood="trade" data-chapter="Chapter I" data-title="The Cross and the Clove" data-year="1511" data-stamp="clove">
+      <header class="ch-head">
+        <p class="ch-num">Chapter I</p>
+        <h2 class="ch-title" data-split>The Cross and the Clove</h2>
+        <p class="ch-years">Portugal and Spain, 1511 to 1663</p>
+      </header>
+      <div class="ch-body">
+        <figure class="vitrine" data-relic="carrack">
+          <div class="vitrine-stage" data-cursor="Drag" tabindex="0" aria-label="A 3D Portuguese carrack. Drag to turn it."></div>
+          <figcaption><b>A Portuguese carrack</b><span>Deep hulls, high castles, square sails. Ships like this carried the first Europeans to the spice islands.</span></figcaption>
+        </figure>
+        <div class="beats">
+          <div class="beat" data-focus="malacca" data-marks="malacca"><p>In August 1511, <b>Afonso de Albuquerque</b> took Malacca. The gate to the spice islands was now in Portuguese hands.</p></div>
+          <div class="beat" data-focus="ternate" data-marks="ternate" data-route="portugal"><p>A year later, Francisco Serrão was shipwrecked and brought to Ternate. The Portuguese stayed. In 1522 they began a stone fort there.</p></div>
+          <div class="beat" data-focus="ternate" data-marks="ternate"><p>Trade turned into control. In 1570, the Portuguese murdered <b>Sultan Hairun</b> of Ternate.</p></div>
+          <div class="beat" data-focus="ternate" data-marks="ternate"><p class="beat-big">His son answered.</p><p><b>Sultan Baabullah</b> laid siege to the fort for five years. In 1575, the Portuguese left Ternate for good.</p></div>
+          <div class="beat" data-focus="tidore" data-marks="tidore" data-route="spain"><p>Spain came too. Magellan's surviving crew reached Tidore in 1521. Spain kept a foothold there until 1663.</p></div>
+          <div class="beat" data-focus="timor" data-marks="timor"><p>Portugal held on in Timor much longer. Its rule there lasted until 1975.</p></div>
+        </div>
+      </div>
+      <aside class="ix ix-words-teaser" aria-label="Portuguese words in Indonesian">
+        <p class="ix-kicker">They lost the islands. Their words stayed.</p>
+        <ul class="word-flip">
+          <li tabindex="0" data-cursor="Flip"><span class="wf-front">sepatu</span><span class="wf-back">sapato <small>shoe</small></span></li>
+          <li tabindex="0" data-cursor="Flip"><span class="wf-front">meja</span><span class="wf-back">mesa <small>table</small></span></li>
+          <li tabindex="0" data-cursor="Flip"><span class="wf-front">bendera</span><span class="wf-back">bandeira <small>flag</small></span></li>
+          <li tabindex="0" data-cursor="Flip"><span class="wf-front">jendela</span><span class="wf-back">janela <small>window</small></span></li>
+          <li tabindex="0" data-cursor="Flip"><span class="wf-front">Minggu</span><span class="wf-back">domingo <small>Sunday</small></span></li>
+          <li tabindex="0" data-cursor="Flip"><span class="wf-front">keju</span><span class="wf-back">queijo <small>cheese</small></span></li>
+          <li tabindex="0" data-cursor="Flip"><span class="wf-front">pesta</span><span class="wf-back">festa <small>party</small></span></li>
+          <li tabindex="0" data-cursor="Flip"><span class="wf-front">sekolah</span><span class="wf-back">escola <small>school</small></span></li>
+        </ul>
+        <p class="ix-foot">Hover or tap a word to see its Portuguese parent. You probably said one of these today.</p>
+      </aside>
+    </section>
+
+    <!-- CHAPTER II -->
+    <section class="chapter" id="ch2" data-scene="map" data-mood="company" data-chapter="Chapter II" data-title="The Company" data-year="1602" data-stamp="voc">
+      <header class="ch-head">
+        <p class="ch-num">Chapter II</p>
+        <h2 class="ch-title" data-split>The Company</h2>
+        <p class="ch-years">The VOC, 1596 to 1799</p>
+      </header>
+      <div class="ch-body">
+        <figure class="vitrine" data-relic="duit">
+          <div class="vitrine-stage" data-cursor="Flip" tabindex="0" aria-label="A 3D VOC copper coin. Drag to turn it. Click to flip it."></div>
+          <figcaption><b>A VOC duit</b><span>Copper small change, minted by the millions and stamped with the Company monogram. Click to flip it.</span></figcaption>
+        </figure>
+        <div class="beats">
+          <div class="beat" data-focus="banten" data-marks="banten" data-route="dutch"><p>In June 1596, Dutch ships under <b>Cornelis de Houtman</b> anchored at Banten. Of the 249 men who sailed, only 87 made it home.</p></div>
+          <div class="beat" data-focus="overview" data-marks="banten,batavia,banda,ambon"><p>On 20 March 1602, the Dutch merged their rival trading firms into one. The <b>Vereenigde Oostindische Compagnie</b>. The VOC.</p><p>It was a company that could sign treaties, build forts, raise soldiers and wage war.</p></div>
+          <div class="beat" data-focus="batavia" data-marks="batavia"><p>On 30 May 1619, <b>Jan Pieterszoon Coen</b> destroyed Jayakarta. He built Batavia on its ashes.</p></div>
+          <div class="beat" data-focus="banda" data-marks="banda"><p>In 1621, Coen came for Banda's nutmeg. Before the conquest, around 15,000 people lived there. Roughly 1,000 remained.</p><p class="note">Population figures are historians' estimates. The collapse itself is not in doubt.</p></div>
+          <div class="beat" data-focus="banda" data-marks="banda,run"><p>In 1667, peace was made at Breda. Each side kept what it held. So the Dutch kept the tiny nutmeg island of <b>Run</b>, and the English kept a place called Manhattan.</p></div>
+          <div class="beat" data-focus="batavia" data-marks="batavia"><p class="beat-big">The Company grew rich. Then it grew rotten.</p><p>Its charter lapsed on 31 December 1799. The Dutch state took over its colonies and its enormous debts.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- BATAVIA -->
+    <section class="batavia" id="batavia" data-scene="batavia" data-mood="company" data-chapter="Interlude" data-title="Batavia Reimagined" data-year="1730" data-stamp="batavia">
+      <div class="bt-intro">
+        <p class="ch-num">Interlude</p>
+        <h2 class="ch-title" data-split>Batavia Reimagined</h2>
+        <p class="ch-years">The Queen of the East, around 1730</p>
+        <p class="bt-lead">Let us stop the clock. You have just stepped off a ship at the mouth of the Ciliwung. Walk with me.</p>
+      </div>
+      <div class="bt-pin">
+        <div class="bt-ui">
+          <div class="bt-stops" role="tablist" aria-label="Tour stops"></div>
+          <button class="bt-toggle" id="bt-then-now" aria-pressed="false" data-cursor="Switch">
+            <span class="btt-then">1730</span><span class="btt-knob" aria-hidden="true"></span><span class="btt-now">Today</span>
+          </button>
+          <p class="bt-help">Drag to look around. Tap the glowing points.</p>
+        </div>
+        <div class="bt-hotspots" aria-label="Points of interest"></div>
+      </div>
+      <div class="bt-cards">
+        <article class="stop" data-stop="harbor">
+          <p class="stop-num">01 <span>The Roadstead</span></p>
+          <h3>Ships at anchor</h3>
+          <p>Tall East Indiamen ride offshore. Small boats carry pepper, sugar, cloth and people. Not everyone on board came by choice.</p>
+          <p>Behind the harbour stands <b>Kasteel Batavia</b>, the Company's square fortress, built from 1620.</p>
+        </article>
+        <article class="stop" data-stop="canal">
+          <p class="stop-num">02 <span>Kali Besar</span></p>
+          <h3>A little Amsterdam</h3>
+          <p>In 1631 and 1632 the river was straightened into a canal. Wealthy merchants built tall gabled houses along its banks.</p>
+          <p>There was one problem. Canals that suit Holland do not suit the tropics. The water silted. Mosquitoes bred.</p>
+        </article>
+        <article class="stop" data-stop="bridge">
+          <p class="stop-num">03 <span>Hoenderpasarbrug</span></p>
+          <h3>The chicken market bridge</h3>
+          <p>A wooden drawbridge was built here in 1628, near the chicken market. Rebuilt many times, it still stands as Jembatan Kota Intan.</p>
+          <p class="stop-try">Tap the bridge to raise it.</p>
+        </article>
+        <article class="stop" data-stop="stadhuis">
+          <p class="stop-num">04 <span>The Stadhuis</span></p>
+          <h3>Where the city was judged</h3>
+          <p>The City Hall was inaugurated in 1710. Courts sat upstairs. Cells lay beneath the front porch.</p>
+          <p>In 1830, Prince Diponegoro was held here before his exile. Today the building is the Jakarta History Museum.</p>
+        </article>
+        <article class="stop stop-grief" data-stop="outside">
+          <p class="stop-num">05 <span>Outside the walls</span></p>
+          <h3>October 1740</h3>
+          <p>Chinese settlers ran the sugar mills around the city. When the sugar trade fell, fear and rumour grew.</p>
+          <p>From 9 October 1740, at least 10,000 ethnic Chinese were killed in Batavia. Survivors were moved outside the walls, to Glodok.</p>
+          <button class="incense" data-cursor="Hold" aria-label="Hold to light incense in remembrance"><span class="incense-stick"></span><span class="incense-smoke"></span><span class="incense-label">Hold to light incense</span></button>
+        </article>
+        <article class="stop" data-stop="today">
+          <p class="stop-num">06 <span>Kota Tua</span></p>
+          <h3>A graveyard, then a ghost</h3>
+          <p>By the 1700s, Europeans called Batavia a graveyard. Malaria was the usual reason.</p>
+          <p>In 1808, Daendels moved the government south to Weltevreden. In 1809 he tore down the castle. Switch to <b>Today</b> and see what stayed.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- PEOPLE -->
+    <section class="people" id="people" data-scene="batavia-dim" data-mood="company" data-chapter="Interlude" data-title="People of the Old City" data-year="1740" data-stamp="people">
+      <div class="people-head">
+        <p class="ch-num">The people</p>
+        <h2 class="ch-title" data-split>Who lived here?</h2>
+        <p class="people-lead">Batavia was never just Dutch. Hover over each shadow and it will move. Behind every figure is a real kind of life.</p>
+      </div>
+      <div class="people-track">
+        <div class="kelir" aria-hidden="true"><div class="blencong"></div></div>
+        <ul class="people-list"></ul>
+      </div>
+    </section>
+
+    <!-- CHAPTER III -->
+    <section class="chapter" id="ch3" data-scene="map" data-mood="iron" data-chapter="Chapter III" data-title="Iron Road, New Masters" data-year="1808" data-stamp="road">
+      <header class="ch-head">
+        <p class="ch-num">Chapter III</p>
+        <h2 class="ch-title" data-split>Iron Road, New Masters</h2>
+        <p class="ch-years">Daendels and Raffles, 1808 to 1816</p>
+      </header>
+      <div class="ch-body">
+        <figure class="vitrine" data-relic="stupa">
+          <div class="vitrine-stage" data-cursor="Drag" tabindex="0" aria-label="A 3D bell stupa from Borobudur. Drag to turn it."></div>
+          <figcaption><b>A stupa of Borobudur</b><span>Built in the 9th century. Cleared from the jungle in 1814 by 200 men under H.C. Cornelius.</span></figcaption>
+        </figure>
+        <div class="beats">
+          <div class="beat" data-focus="batavia" data-marks="batavia"><p>In 1808, Governor General <b>Herman Willem Daendels</b> arrived. His orders were to defend Java against the British.</p></div>
+          <div class="beat" data-focus="postroad" data-marks="anyer,panarukan" data-road="1"><p>He drove a road across the island, from Anyer to Panarukan. About 1,000 kilometres in three years.</p><p class="road-counter" aria-live="off"><span id="road-km">0</span> km</p></div>
+          <div class="beat" data-focus="postroad" data-marks="anyer,panarukan" data-road="1"><p>It was built with forced labour. One British account claimed about 12,000 deaths. Nobody kept an honest count.</p><p>You may have driven on it. Much of it is the Pantura coast road today.</p></div>
+          <div class="beat" data-focus="batavia" data-marks="batavia"><p>In 1811 the British took Java. <b>Thomas Stamford Raffles</b> governed it until 1816.</p></div>
+          <div class="beat" data-focus="borobudur" data-marks="borobudur"><p>In 1814, Raffles sent an engineer to a hill near Magelang. Beneath the trees and ash lay <b>Borobudur</b>.</p></div>
+          <div class="beat" data-focus="tambora" data-marks="tambora" data-erupt="1"><p>In April 1815, <b>Tambora</b> exploded on Sumbawa. Tens of thousands died. The next year, Europe had no summer.</p></div>
+          <div class="beat" data-focus="java" data-marks="batavia"><p>In 1816, the British handed Java back to the Dutch. The masters changed. The road stayed.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CHAPTER IV -->
+    <section class="chapter" id="ch4" data-scene="map" data-mood="sugar" data-chapter="Chapter IV" data-title="The Sweet and the Bitter" data-year="1830" data-stamp="coffee">
+      <header class="ch-head">
+        <p class="ch-num">Chapter IV</p>
+        <h2 class="ch-title" data-split>The Sweet and the Bitter</h2>
+        <p class="ch-years">War and the Cultivation System, 1825 to 1870</p>
+      </header>
+      <div class="ch-body">
+        <figure class="vitrine" data-relic="coffee">
+          <div class="vitrine-stage" data-cursor="Drag" tabindex="0" aria-label="A 3D coffee branch with red cherries. Drag to turn it."></div>
+          <figcaption><b>Coffee, Priangan highlands</b><span>Java coffee filled European cups. The farmers who grew it were told what to plant.</span></figcaption>
+        </figure>
+        <div class="beats">
+          <div class="beat" data-focus="yogyakarta" data-marks="yogyakarta"><p>In 1825, <b>Prince Diponegoro</b> rose against the Dutch. The Java War lasted five years. At least 200,000 Javanese died.</p></div>
+          <div class="beat" data-focus="magelang" data-marks="magelang"><p>On 28 March 1830 he came to Magelang to negotiate. He was arrested at the table, then exiled. He died in Makassar in 1855.</p></div>
+          <div class="beat" data-focus="java" data-marks="batavia,yogyakarta"><p>That same year, <b>Johannes van den Bosch</b> brought the Cultivation System. Each village had to give a fifth of its land to export crops. Or 66 days of labour a year.</p></div>
+          <div class="beat" data-focus="cirebon" data-marks="cirebon,demak,grobogan"><p>In practice, it was often more. Famine struck Cirebon in 1843 and 1844, then Demak and Grobogan.</p><p class="note">Historians still debate how much drought and how much the System were to blame.</p></div>
+          <div class="beat" data-focus="java" data-marks="batavia"><p>The profits sailed north. By one estimate, around 840 million guilders between 1830 and 1870. At its peak, the colony paid about half of the Dutch state's revenue.</p></div>
+          <div class="beat" data-focus="java" data-marks="lebak"><p>In 1860, a former official named Eduard Douwes Dekker published <b>Max Havelaar</b> under the name Multatuli. The Netherlands could no longer say it did not know.</p></div>
+        </div>
+      </div>
+      <aside class="ix ix-village" id="ix-village" aria-label="A village under the Cultivation System">
+        <div class="ixv-head">
+          <p class="ix-kicker">Try it. Run a village in 1840.</p>
+          <p>Your village has 40 fields. The rule says 8 go to export crops. The official in charge earns a bonus on every harvest. Slide to see what happens when he asks for more.</p>
+        </div>
+        <div class="ixv-fields" aria-hidden="true"></div>
+        <div class="ixv-controls">
+          <label for="ixv-range">Fields for coffee and sugar: <b id="ixv-count">8</b> of 40</label>
+          <input type="range" id="ixv-range" min="0" max="40" value="8" step="1" data-cursor="Drag" />
+          <div class="ixv-meters">
+            <div class="meter"><span>Rice for the village</span><i id="m-rice"></i></div>
+            <div class="meter"><span>Profit shipped to Holland</span><i id="m-profit"></i></div>
+          </div>
+          <p class="ixv-verdict" id="ixv-verdict" aria-live="polite">This is the rule on paper.</p>
+          <p class="ix-foot">A simplified illustration, not a historical record of one village.</p>
+        </div>
+      </aside>
+    </section>
+
+    <!-- CHAPTER V -->
+    <section class="chapter" id="ch5" data-scene="map" data-mood="iron" data-chapter="Chapter V" data-title="The Last Conquests" data-year="1873" data-stamp="keris">
+      <header class="ch-head">
+        <p class="ch-num">Chapter V</p>
+        <h2 class="ch-title" data-split>The Last Conquests</h2>
+        <p class="ch-years">Aceh, Bali and a debt of honour, 1873 to 1914</p>
+      </header>
+      <div class="ch-body">
+        <figure class="vitrine" data-relic="keris">
+          <div class="vitrine-stage" data-cursor="Drag" tabindex="0" aria-label="A 3D keris dagger. Drag to turn it."></div>
+          <figcaption><b>A keris</b><span>More than a blade. An heirloom with a name and a soul. In 2023, the Netherlands returned a keris taken from Klungkung.</span></figcaption>
+        </figure>
+        <div class="beats">
+          <div class="beat" data-focus="aceh" data-marks="aceh"><p>The Dutch declared war on <b>Aceh</b> on 26 March 1873. Officially it ended in 1904. Guerrilla fighting went on for about another decade.</p><p>Somewhere between 50,000 and 60,000 Acehnese died.</p></div>
+          <div class="beat" data-focus="bali" data-marks="badung"><p>On 20 September 1906, the court of Badung in Bali walked dressed in white into Dutch fire rather than surrender. This is the <b>puputan</b>, the ending.</p></div>
+          <div class="beat" data-focus="overview" data-marks="aceh,badung,batavia"><p>The Dutch finished conquering the archipelago only in the early 20th century. Remember that date. We will need it later.</p></div>
+          <div class="beat" data-focus="java" data-marks="batavia"><p>In 1899 a lawyer named Van Deventer wrote that the Netherlands owed the Indies "a debt of honour". In 1901 Queen Wilhelmina announced an <b>Ethical Policy</b>. Irrigation, education, emigration.</p></div>
+          <div class="beat" data-focus="java" data-marks="batavia"><p class="beat-big">It opened a few school doors.</p><p>Through those doors walked the people who would end the colony.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CHAPTER VI -->
+    <section class="chapter" id="ch6" data-scene="map" data-mood="awake" data-chapter="Chapter VI" data-title="Awakening" data-year="1908" data-stamp="pledge">
+      <header class="ch-head">
+        <p class="ch-num">Chapter VI</p>
+        <h2 class="ch-title" data-split>Awakening</h2>
+        <p class="ch-years">Letters, schools and a pledge, 1908 to 1928</p>
+      </header>
+      <div class="ch-body">
+        <figure class="vitrine" data-relic="pelita">
+          <div class="vitrine-stage" data-cursor="Light" tabindex="0" aria-label="A 3D oil lamp. Click to light it."></div>
+          <figcaption><b>A pelita oil lamp</b><span>After darkness, light. Click the lamp to light it.</span></figcaption>
+        </figure>
+        <div class="beats">
+          <div class="beat" data-focus="jepara" data-marks="jepara"><p><b>Kartini</b> of Jepara wrote letters to Dutch friends about schooling, freedom and the lives of women. She died in 1904. She was 25.</p></div>
+          <div class="beat" data-focus="jepara" data-marks="jepara"><p>Her letters were published in 1911. In Malay, the title became <i>Habis Gelap Terbitlah Terang</i>. After darkness, light.</p></div>
+          <div class="beat" data-focus="batavia" data-marks="batavia"><p>On 20 May 1908, students at the STOVIA medical school founded <b>Budi Utomo</b>. Today, 20 May is National Awakening Day.</p></div>
+          <div class="beat" data-focus="batavia" data-marks="batavia"><p>In 1913, Soewardi Soerjaningrat wrote an essay called "If I Were a Dutchman". It got him exiled. He came home as <b>Ki Hajar Dewantara</b> and opened Taman Siswa schools in 1922.</p></div>
+          <div class="beat" data-focus="batavia" data-marks="batavia"><p>On 28 October 1928, young people from across the islands met in Batavia. They made three promises.</p></div>
+        </div>
+      </div>
+      <aside class="ix ix-pledge" id="ix-pledge" aria-label="The Youth Pledge of 1928">
+        <p class="ix-kicker">Sumpah Pemuda. Tap each line to make the promise with them.</p>
+        <ol class="pledge-lines">
+          <li><button data-cursor="Pledge"><span class="pl-id">Kami putra dan putri Indonesia, mengaku bertumpah darah yang satu, tanah air Indonesia.</span><span class="pl-en">We, the sons and daughters of Indonesia, declare one birthplace, the land of Indonesia.</span></button></li>
+          <li><button data-cursor="Pledge"><span class="pl-id">Kami putra dan putri Indonesia, mengaku berbangsa yang satu, bangsa Indonesia.</span><span class="pl-en">We, the sons and daughters of Indonesia, declare one nation, the nation of Indonesia.</span></button></li>
+          <li><button data-cursor="Pledge"><span class="pl-id">Kami putra dan putri Indonesia, menjunjung bahasa persatuan, bahasa Indonesia.</span><span class="pl-en">We, the sons and daughters of Indonesia, uphold the language of unity, Indonesian.</span></button></li>
+        </ol>
+        <p class="pledge-after" aria-live="polite">That night, W.R. Supratman played a new song on his violin, without words. It was called <b>Indonesia Raya</b>.</p>
+      </aside>
+    </section>
+
+    <!-- CHAPTER VII -->
+    <section class="chapter" id="ch7" data-scene="map" data-mood="dark" data-chapter="Chapter VII" data-title="The Rising Sun" data-year="1942" data-stamp="rain">
+      <header class="ch-head">
+        <p class="ch-num">Chapter VII</p>
+        <h2 class="ch-title" data-split>The Rising Sun</h2>
+        <p class="ch-years">The Japanese occupation, 1942 to 1945</p>
+      </header>
+      <div class="ch-body ch-body--solo">
+        <div class="beats">
+          <div class="beat" data-focus="kalijati" data-marks="kalijati"><p>On 8 March 1942, the Dutch surrendered Java to Japan at Kalijati. After more than three centuries, the Dutch were gone in days.</p></div>
+          <div class="beat" data-focus="java" data-marks="batavia"><p>Some people welcomed the Japanese at first. The welcome did not last.</p></div>
+          <div class="beat" data-focus="java" data-marks="batavia"><p>Millions were forced to work as <b>romusha</b>. Estimates run from 4 to 10 million on Java. Many of those sent away never came home.</p><p class="note">Numbers vary widely between sources. All of them are terrible.</p></div>
+          <div class="beat" data-focus="java" data-marks="batavia"><p>Rice was taken for the army. Famine followed in 1944 and 1945.</p></div>
+          <div class="beat" data-focus="java" data-marks="blitar,batavia"><p>Japan also trained Indonesian soldiers in PETA from 1943, and let leaders plan a state. On 1 June 1945, Sukarno laid out <b>Pancasila</b>.</p></div>
+          <div class="beat" data-focus="batavia" data-marks="batavia"><p class="beat-big">On 15 August 1945, Japan surrendered.</p><p>For a few days, nobody truly ruled. That gap was everything.</p></div>
+        </div>
+      </div>
+      <p class="rain-hint" aria-hidden="true">Move your cursor to wipe the rain away.</p>
+    </section>
+
+    <!-- CHAPTER VIII -->
+    <section class="chapter chapter--merdeka" id="ch8" data-scene="map" data-mood="joy" data-chapter="Chapter VIII" data-title="Merdeka" data-year="1945" data-stamp="merdeka">
+      <header class="ch-head">
+        <p class="ch-num">Chapter VIII</p>
+        <h2 class="ch-title" data-split>Merdeka</h2>
+        <p class="ch-years">Friday, 17 August 1945</p>
+      </header>
+      <div class="ch-body ch-body--solo">
+        <div class="beats">
+          <div class="beat" data-focus="rengasdengklok" data-marks="rengasdengklok"><p>Before dawn on 16 August, young activists took Sukarno and Hatta to <b>Rengasdengklok</b>. They wanted a proclamation now. Not later.</p></div>
+          <div class="beat" data-focus="batavia" data-marks="batavia"><p>That night the text was drafted in Jakarta. Sayuti Melik typed it on a borrowed typewriter.</p></div>
+        </div>
+      </div>
+      <div class="ix ix-proklamasi" id="ix-proklamasi">
+        <div class="typewriter-sheet" aria-label="The text of the Proclamation">
+          <p class="tw-title">P R O K L A M A S I</p>
+          <p class="tw-body" data-type="Kami, bangsa Indonesia, dengan ini menjatakan kemerdekaan Indonesia.">Kami, bangsa Indonesia, dengan ini menjatakan kemerdekaan Indonesia.</p>
+          <p class="tw-body" data-type="Hal-hal jang mengenai pemindahan kekoeasaan d.l.l., diselenggarakan dengan tjara saksama dan dalam tempo jang sesingkat-singkatnja.">Hal-hal jang mengenai pemindahan kekoeasaan d.l.l., diselenggarakan dengan tjara saksama dan dalam tempo jang sesingkat-singkatnja.</p>
+          <p class="tw-date" data-type="Djakarta, hari 17 boelan 8 tahoen 05">Djakarta, hari 17 boelan 8 tahoen 05</p>
+          <p class="tw-sign" data-type="Atas nama bangsa Indonesia, Soekarno/Hatta.">Atas nama bangsa Indonesia,<br />Soekarno/Hatta.</p>
+        </div>
+        <div class="tw-notes">
+          <p><b>We, the people of Indonesia, hereby declare the independence of Indonesia.</b> Matters concerning the transfer of power will be carried out carefully and as quickly as possible.</p>
+          <p>Notice the date. <i>Tahoen 05</i> is the Japanese imperial year 2605. Even freedom was first dated in the occupier's calendar.</p>
+          <p>At 10 in the morning, Tokyo time, at Jalan Pegangsaan Timur 56, Sukarno read it aloud. The flag was sewn by <b>Fatmawati</b>. Latief Hendraningrat and Suhud raised it.</p>
+        </div>
+      </div>
+      <div class="ix ix-flag" id="ix-flag">
+        <div class="flag-stage">
+          <svg class="flag-svg" viewBox="0 0 300 520" aria-hidden="true">
+            <defs>
+              <linearGradient id="pole" x1="0" x2="1"><stop offset="0" stop-color="#9c8a6a" /><stop offset=".5" stop-color="#f4e6c4" /><stop offset="1" stop-color="#7c6a4a" /></linearGradient>
+            </defs>
+            <rect x="96" y="30" width="8" height="480" rx="3" fill="url(#pole)" />
+            <circle cx="100" cy="26" r="9" fill="#e2c46e" />
+            <path d="M30 510 h140" stroke="#e8dcc0" stroke-width="6" stroke-linecap="round" />
+            <g class="flag-group">
+              <path class="flag-red" d="" fill="#d42a2a" />
+              <path class="flag-white" d="" fill="#f8f4ec" />
+            </g>
+            <path class="flag-rope" d="" stroke="#e8dcc0" stroke-width="1.5" fill="none" opacity=".7" />
+          </svg>
+        </div>
+        <div class="flag-copy">
+          <p class="ix-kicker">Your turn, <span class="vname">friend</span>.</p>
+          <h3>Raise the Sang Saka Merah Putih</h3>
+          <p>Hold the button. Slowly, like they did. Everyone in the yard stood still and sang.</p>
+          <button class="btn-hold btn-hold--flag" id="flag-hold" data-cursor="Hold" aria-label="Hold to raise the flag">
+            <svg class="hold-ring" viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="56" /><circle class="hold-prog" cx="60" cy="60" r="56" /></svg>
+            <span class="hold-text"><b>Hold</b><small>to raise</small></span>
+          </button>
+          <p class="flag-done" aria-live="polite"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- CHAPTER IX -->
+    <section class="chapter" id="ch9" data-scene="map" data-mood="fight" data-chapter="Chapter IX" data-title="Four More Years" data-year="1949" data-stamp="yamato">
+      <header class="ch-head">
+        <p class="ch-num">Chapter IX</p>
+        <h2 class="ch-title" data-split>Four More Years</h2>
+        <p class="ch-years">The Revolution, 1945 to 1949</p>
+      </header>
+      <div class="ix ix-yamato" id="ix-yamato">
+        <div class="yamato-copy">
+          <p class="ix-kicker">Surabaya, 19 September 1945</p>
+          <h3>Tear the blue</h3>
+          <p>The Dutch came back and did not accept the proclamation. Above the Hotel Yamato, Dutch men raised their red, white and blue.</p>
+          <p>Young Indonesians climbed to the roof. They tore off the blue strip. Red and white remained.</p>
+          <p class="yamato-try">Drag the blue strip down to tear it away.</p>
+          <p class="yamato-done" aria-live="polite"></p>
+        </div>
+        <div class="yamato-stage" data-cursor="Tear">
+          <svg class="yamato-svg" viewBox="0 0 420 420" role="img" aria-label="The Dutch flag over the Hotel Yamato tower. Drag the blue strip to tear it off."></svg>
+        </div>
+      </div>
+      <div class="ch-body ch-body--solo">
+        <div class="beats">
+          <div class="beat" data-focus="surabaya" data-marks="surabaya"><p>On 10 November 1945, British forces launched their main assault on Surabaya. Thousands of Indonesians died defending the city. Today, 10 November is <b>Heroes' Day</b>.</p></div>
+          <div class="beat" data-focus="java" data-marks="linggadjati,batavia,yogyakarta"><p>Agreements came and broke. Linggadjati in 1947. Renville in 1948. Each was followed by a Dutch military offensive.</p></div>
+          <div class="beat" data-focus="yogyakarta" data-marks="yogyakarta"><p>On 1 March 1949, Republican forces held Yogyakarta for about six hours. It was short. The world noticed.</p></div>
+          <div class="beat" data-focus="overview" data-marks="batavia"><p>At the Round Table Conference in The Hague, the Dutch agreed to leave. On <b>27 December 1949</b>, sovereignty was transferred.</p></div>
+          <div class="beat" data-focus="overview" data-marks="batavia"><p class="beat-big">The rest took longer to say.</p><p>In 2020, the Dutch King apologised for excessive violence. In 2022, the Prime Minister apologised for extreme violence after a major study. In 2023, the Netherlands recognised 17 August 1945 as Indonesia's independence day.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MYTH -->
+    <section class="myth" id="myth" data-scene="none" data-mood="paper" data-chapter="Afterword" data-title="Not 350 Years" data-year="1942" data-stamp="myth">
+      <div class="myth-inner">
+        <p class="ch-num">A myth worth breaking</p>
+        <h2 class="ch-title" data-split>Was it really 350 years?</h2>
+        <p class="myth-lead">You have heard it all your life. <i>Dijajah 350 tahun.</i> It is a powerful line. It is also not quite true.</p>
+        <div class="myth-chart" role="img" aria-label="Approximate years of effective Dutch control by region, ending in 1942">
+          <div class="mc-axis"><span>1600</span><span>1700</span><span>1800</span><span>1900</span><span>1942</span></div>
+          <ul class="mc-rows"></ul>
+        </div>
+        <p class="myth-src">Approximate years of effective Dutch control. Based on the conquest dates in this story. Historians draw these lines differently.</p>
+        <div class="myth-text">
+          <p>The Dutch were present for about 350 years. They did not rule all of us for that long. In the 1960s the historian <b>G.J. Resink</b> showed that many kingdoms stayed independent under international law into the late 1800s and beyond.</p>
+          <p class="beat-big">So here is a better line. Not 350 years of defeat. Centuries of resistance.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- LEGACY -->
+    <section class="legacy" id="legacy" data-scene="none" data-mood="paper" data-chapter="Afterword" data-title="What Stayed" data-year="1950" data-stamp="legacy">
+      <div class="legacy-head">
+        <p class="ch-num">What stayed</p>
+        <h2 class="ch-title" data-split>It is still in your mouth</h2>
+        <p>By a popular estimate, around 10,000 Indonesian words trace back to Dutch. Run your cursor across the wall. Every word remembers where it came from.</p>
+      </div>
+      <div class="word-wall" id="word-wall" aria-label="Indonesian words of Dutch origin"></div>
+
+      <div class="stones">
+        <div class="stones-head">
+          <p class="ch-num">Stone that stayed</p>
+          <h3>Buildings you can still visit</h3>
+        </div>
+        <ul class="stone-list" id="stone-list"></ul>
+      </div>
+
+      <div class="table-cloth">
+        <article class="tc-card" data-cursor="Open" tabindex="0">
+          <span class="tc-num">i</span>
+          <h4>Rijsttafel</h4>
+          <p>The "rice table". A colonial banquet of many dishes, served with rice. Hotels like Des Indes in Batavia offered dozens at once.</p>
+        </article>
+        <article class="tc-card" data-cursor="Open" tabindex="0">
+          <span class="tc-num">ii</span>
+          <h4>Kebaya</h4>
+          <p>European and Indo women adopted the kebaya, often edged with lace. In 2024, UNESCO listed it as shared heritage of five nations.</p>
+        </article>
+        <article class="tc-card" data-cursor="Open" tabindex="0">
+          <span class="tc-num">iii</span>
+          <h4>Batik Belanda</h4>
+          <p>From about 1840 to 1940, Indo women ran batik workshops on the north coast. Tulips, bouquets and even Snow White appeared in wax.</p>
+        </article>
+        <article class="tc-card" data-cursor="Open" tabindex="0">
+          <span class="tc-num">iv</span>
+          <h4>Kroncong</h4>
+          <p>Born among the Portuguese speaking Mardijkers of Kampung Tugu. Its small guitar descends from the Portuguese cavaquinho.</p>
+        </article>
+        <article class="tc-card" data-cursor="Open" tabindex="0">
+          <span class="tc-num">v</span>
+          <h4>The railway</h4>
+          <p>The first line, Semarang to Tanggung, opened on 10 August 1867. It was built to move sugar. Today it moves you.</p>
+        </article>
+        <article class="tc-card" data-cursor="Open" tabindex="0">
+          <span class="tc-num">vi</span>
+          <h4>Kretek</h4>
+          <p>Legend credits Haji Djamhari of Kudus, around 1880, who mixed cloves into tobacco. The name copies the crackle of burning cloves.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- PLAYGROUND -->
+    <section class="play" id="play" data-scene="none" data-mood="play" data-chapter="Afterword" data-title="The Playground" data-year="1950" data-stamp="play">
+      <div class="play-head">
+        <p class="ch-num">Permainan</p>
+        <h2 class="ch-title" data-split>The Playground</h2>
+        <p>Children played these under the VOC, under the Dutch, under Japan, and in the Republic. Your grandparents probably did too. Your turn.</p>
+      </div>
+      <div class="play-tabs" role="tablist" aria-label="Games">
+        <button role="tab" aria-selected="true" aria-controls="game-congklak" id="tab-congklak" data-cursor="Play">Congklak</button>
+        <button role="tab" aria-selected="false" aria-controls="game-gasing" id="tab-gasing" data-cursor="Play">Gasing</button>
+        <button role="tab" aria-selected="false" aria-controls="game-kata" id="tab-kata" data-cursor="Play">Kata Warisan</button>
+        <button role="tab" aria-selected="false" aria-controls="game-batik" id="tab-batik" data-cursor="Play">Membatik</button>
+      </div>
+      <div class="play-panels">
+        <div class="game" id="game-congklak" role="tabpanel" aria-labelledby="tab-congklak">
+          <div class="game-info">
+            <h3>Congklak</h3>
+            <p>A wooden board, 14 small holes, 2 big ones, 98 shells. Pick a hole on your side. Shells are sown one by one, counter-clockwise.</p>
+            <ul class="rules">
+              <li>Land in your big hole and you go again.</li>
+              <li>Land in a full hole and you scoop it up and keep sowing.</li>
+              <li>Land in an empty hole on your side and you capture the hole across.</li>
+            </ul>
+            <div class="cg-score"><span>You <b id="cg-you">0</b></span><span>Nenek <b id="cg-ai">0</b></span></div>
+            <p class="cg-status" id="cg-status" aria-live="polite">Your move. Pick a hole on the bottom row.</p>
+            <button class="btn-line" id="cg-reset" data-cursor="Reset">New game</button>
+          </div>
+          <div class="cg-board-wrap"><div class="cg-board" id="cg-board" aria-label="Congklak board"></div></div>
+        </div>
+        <div class="game" id="game-gasing" role="tabpanel" aria-labelledby="tab-gasing" hidden>
+          <div class="game-info">
+            <h3>Gasing</h3>
+            <p>Wind the string, pull hard, let it fly. A good top hums. Regional names include gangsing, pukang and apiong.</p>
+            <ul class="rules">
+              <li>Press on the top, drag away to pull the string.</li>
+              <li>Release to throw. A longer pull spins faster.</li>
+              <li>Tap the spinning top gently to keep it balanced.</li>
+            </ul>
+            <div class="cg-score"><span>Spin <b id="gs-time">0.0</b>s</span><span>Best <b id="gs-best">0.0</b>s</span></div>
+            <p class="cg-status" id="gs-status" aria-live="polite">Pull the string.</p>
+          </div>
+          <div class="gs-stage" id="gs-stage" data-cursor="Pull"></div>
+        </div>
+        <div class="game" id="game-kata" role="tabpanel" aria-labelledby="tab-kata" hidden>
+          <div class="game-info">
+            <h3>Kata Warisan</h3>
+            <p>Inherited words. Find each Indonesian word and the Dutch or Portuguese word it came from.</p>
+            <div class="cg-score"><span>Moves <b id="kt-moves">0</b></span><span>Pairs <b id="kt-pairs">0</b>/6</span></div>
+            <p class="cg-status" id="kt-status" aria-live="polite">Flip two cards.</p>
+            <button class="btn-line" id="kt-reset" data-cursor="Shuffle">New words</button>
+          </div>
+          <div class="kt-grid" id="kt-grid"></div>
+        </div>
+        <div class="game" id="game-batik" role="tabpanel" aria-labelledby="tab-batik" hidden>
+          <div class="game-info">
+            <h3>Membatik</h3>
+            <p>Draw with hot wax using your canting. Then dip the cloth in indigo. Wherever the wax sits, the cloth stays pale.</p>
+            <div class="bk-tools">
+              <button class="bk-tool is-on" data-tool="line" data-cursor="Draw">Canting</button>
+              <button class="bk-tool" data-tool="kawung" data-cursor="Stamp">Kawung</button>
+              <button class="bk-tool" data-tool="tulip" data-cursor="Stamp">Tulip</button>
+              <button class="bk-tool" data-tool="dots" data-cursor="Dot">Isen dots</button>
+            </div>
+            <div class="bk-actions">
+              <button class="btn-line" id="bk-dye" data-cursor="Dye">Dip in indigo</button>
+              <button class="btn-line" id="bk-soga" data-cursor="Dye">Dip in soga brown</button>
+              <button class="btn-line" id="bk-clear" data-cursor="Reset">New cloth</button>
+              <button class="btn-line" id="bk-save" data-cursor="Save">Save</button>
+            </div>
+            <p class="cg-status" id="bk-status" aria-live="polite">Draw anything. A tulip would make Eliza van Zuylen proud.</p>
+          </div>
+          <div class="bk-stage"><canvas id="bk-canvas" width="900" height="900" data-cursor="Draw" aria-label="Batik drawing canvas"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TODAY -->
+    <section class="today" id="today" data-scene="map" data-mood="modern" data-chapter="Now" data-title="The Quiet Colonization" data-year="2026" data-stamp="today">
+      <div class="today-head">
+        <p class="ch-num">Now</p>
+        <h2 class="ch-title" data-split>The Quiet Colonization</h2>
+        <p class="today-lead">Colonies rarely end with a flag. The old questions are still here, wearing new clothes. Who owns the land? Who sets the price? Who keeps the records?</p>
+        <p class="today-fair">Not every foreign partner is a colonizer. Investment builds roads and jobs too. But it pays to look closely. Tap a card.</p>
+      </div>
+      <ul class="today-grid" id="today-grid"></ul>
+      <div class="today-close">
+        <p>There is good news too. In 2018, Indonesia bought a 51 percent stake in the Grasberg mine in Papua. Owning the mine was a choice. So is everything that comes next.</p>
+        <p class="beat-big">The best defence is what you just did. Paying attention.</p>
+      </div>
+    </section>
+
+    <!-- EPILOGUE -->
+    <section class="epilogue" id="epilogue" data-scene="map" data-mood="night" data-chapter="Epilogue" data-title="Remember Forward" data-year="2026" data-stamp="lantern">
+      <div class="ep-inner">
+        <p class="ch-num">Epilogue</p>
+        <h2 class="ch-title" data-split>Remember Forward</h2>
+        <p class="ep-lead">You just walked through more than four centuries. Thank you for staying, <span class="vname">friend</span>.</p>
+        <p>Light a lantern for someone who lived through this. A farmer in Cirebon. A girl in Jepara. A boy on a hotel roof in Surabaya. Or your own grandparents.</p>
+        <form class="lantern-form" id="lantern-form">
+          <label for="lantern-text" class="sr-only">Who is your lantern for?</label>
+          <input id="lantern-text" type="text" maxlength="40" placeholder="For my grandmother, who remembered" />
+          <button type="submit" class="btn-solid" data-cursor="Release">Release</button>
+        </form>
+        <p class="ep-atlas"><button class="btn-line btn-line--light" id="ep-atlas" data-cursor="Wander">Wander the Atlas</button></p>
+        <p class="ep-pass">Your travel pass holds <b id="ep-stamps">0</b> of <b id="ep-total">16</b> stamps. <button class="btn-text" id="ep-open-pass" data-cursor="Pass">Open it</button></p>
+      </div>
+      <footer class="credits">
+        <div class="cr-col">
+          <h3>About this archive</h3>
+          <p>Nusantara Reimagined is an artistic reconstruction. The 3D scenes are imagined, not photographed. The facts come from the sources below. Where historians disagree, we tell you.</p>
+          <p>Every model, pattern and sound on this site is made in code.</p>
+        </div>
+        <div class="cr-col">
+          <h3>Sources</h3>
+          <ul class="sources">
+            <li>M.C. Ricklefs, <i>A History of Modern Indonesia since c. 1200</i></li>
+            <li>Adrian Vickers, <i>A History of Modern Indonesia</i></li>
+            <li>G.J. Resink, <i>Indonesia's History Between the Myths</i>, 1968</li>
+            <li>KITLV, NIMH and NIOD, <i>Independence, Decolonization, Violence and War in Indonesia, 1945 to 1950</i>, 2022</li>
+            <li>U.S. Geological Survey, Mineral Commodity Summaries, Nickel, 2025 and 2026</li>
+            <li>Global Forest Watch, tree cover loss data for Indonesia</li>
+            <li>APJII, Indonesian internet user survey, 2024</li>
+            <li>Kemendikbudristek, regional language vitality reports, 2024</li>
+            <li>Konsorsium Pembaruan Agraria, agrarian conflict reports</li>
+            <li>Bank Indonesia, external debt statistics</li>
+            <li>Antara News reporting on PDNS, imported waste and illegal fishing</li>
+            <li>Encyclopaedic entries on Batavia, the VOC, the Java War, the Cultivation System, the Proclamation and the Revolution, cross-checked across English, Indonesian and Dutch editions</li>
+          </ul>
+        </div>
+        <div class="cr-col">
+          <h3>Made with care</h3>
+          <p>Built with three.js, GSAP, Lenis, anime.js and Motion. Coastlines from Natural Earth via world-atlas.</p>
+          <p><button class="btn-text" id="btn-top" data-cursor="Again">Walk it again</button></p>
+          <p class="cr-small">Merdeka is not a date. It is a habit.</p>
+        </div>
+      </footer>
+    </section>
+  </main>
+
+  <!-- MENU -->
+  <div id="menu" class="menu" aria-hidden="true" role="dialog" aria-label="Chapters">
+    <div class="menu-bg"></div>
+    <div class="menu-inner">
+      <p class="menu-kicker">Choose a moment</p>
+      <ol class="menu-list" id="menu-list"></ol>
+      <div class="menu-side">
+        <p class="menu-preview" id="menu-preview">Every chapter is a stop on the same journey. You can jump around. I will keep your place.</p>
+        <button class="btn-atlas" id="menu-atlas" data-cursor="Wander"><span>Open the Atlas</span><small>Wander the map freely</small></button>
+        <label class="menu-motion"><input type="checkbox" id="opt-lite" /> <span>Lighter 3D for slower devices</span></label>
+      </div>
+    </div>
+    <button class="menu-close" id="menu-close" aria-label="Close chapters" data-cursor="Close"><span></span><span></span></button>
+  </div>
+
+  <!-- PASS -->
+  <div id="pass" class="pass" aria-hidden="true" role="dialog" aria-label="Your travel pass">
+    <div class="pass-bg"></div>
+    <div class="pass-book">
+      <div class="pass-cover">
+        <p class="pass-kicker">Surat Jalan</p>
+        <h3>Travel pass of <span class="vname">a friend</span></h3>
+        <p>Colonial authorities once made people carry passes to move between districts. This one only grants you memories. Collect a stamp in every chapter.</p>
+      </div>
+      <ul class="pass-grid" id="pass-grid"></ul>
+      <button class="menu-close" id="pass-close" aria-label="Close travel pass" data-cursor="Close"><span></span><span></span></button>
+    </div>
+  </div>
+
+  <!-- MODAL -->
+  <div id="modal" class="modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-bg" data-close></div>
+    <article class="modal-card">
+      <div class="modal-art" aria-hidden="true"></div>
+      <div class="modal-body">
+        <p class="modal-kicker" id="modal-kicker"></p>
+        <h3 id="modal-title"></h3>
+        <div id="modal-text"></div>
+      </div>
+      <button class="menu-close" data-close aria-label="Close" data-cursor="Close"><span></span><span></span></button>
+    </article>
+  </div>
+
+  <div id="toasts" class="toasts" aria-live="polite"></div>
+  <div id="stamp-fx" class="stamp-fx" aria-hidden="true"></div>
+  <div id="wipe" class="wipe" aria-hidden="true"></div>
   <canvas id="confetti" aria-hidden="true"></canvas>
-  <div id="flash" aria-hidden="true"></div>
-  <div id="night-tint" aria-hidden="true"></div>
-  <noscript>WAAWer Coaster needs JavaScript and WebGL to run.</noscript>
+
+  <noscript><p class="noscript">This archive needs JavaScript for its 3D scenes and games. The story text is still readable above.</p></noscript>
   <script type="module" src="/src/main.js"></script>
 </body>
 </html>
